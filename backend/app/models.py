@@ -39,8 +39,14 @@ class Product(BaseModel):
     rating: float = Field(default=4.0, ge=0, le=5)
     rating_count: int = Field(default=0, ge=0)
     delivery_text: str = "Delivery in 5-7 days"
+    stock_status: str = "In stock"
     image_url: str = "/products/default.svg"
+    gallery_urls: list[str] = Field(default_factory=list)
     is_prime: bool = False
+    bullet_points: list[str] = Field(default_factory=list)
+    about_item: list[str] = Field(default_factory=list)
+    size_options: list[str] = Field(default_factory=list)
+    color_options: list[str] = Field(default_factory=list)
     weight_kg: float = Field(..., gt=0)
     dimensions_cm: DimensionsCm
     in_stock: bool = True

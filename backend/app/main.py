@@ -17,7 +17,7 @@ from app.models import (
     RazorpayVerifyRequest,
     ShippingQuoteRequest,
 )
-from app.services.catalog import list_suppliers, search_products
+from app.services.catalog import get_product_or_error, list_suppliers, search_products
 from app.services.operations import update_order_status, update_procurement_task_status
 from app.services.payments import create_razorpay_order, verify_razorpay_signature
 from app.services.pricing import quote_cart
@@ -53,6 +53,14 @@ def suppliers() -> list[dict]:
 @app.get("/products")
 def products(query: str | None = None, category: str | None = None) -> list[dict]:
     return [product.model_dump() for product in search_products(query=query, category=category)]
+
+
+@app.get("/products/{product_id}")
+def product_detail(product_id: str) -> dict:
+    try:
+        return get_product_or_error(product_id).model_dump()
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.post("/shipping/quote")

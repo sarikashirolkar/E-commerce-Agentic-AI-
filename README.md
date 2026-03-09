@@ -52,6 +52,7 @@ Frontend env vars:
 - `GET /health`
 - `GET /suppliers`
 - `GET /products?query=&category=`
+- `GET /products/{product_id}`
 - `POST /shipping/quote`
 - `POST /cart/quote`
 - `POST /checkout`
@@ -66,6 +67,15 @@ Frontend env vars:
 - `GET /admin` in the Next.js app provides an operations dashboard for:
 - order status updates (`payment_pending` → `purchasing` → `consolidating` → `shipped`)
 - procurement task updates per supplier (`queued` / `placed` / `failed`)
+
+## Marketplace UI upgrades
+- Aurora dark theme with glassmorphism product cards
+- Top navigation with search, account menu, cart count, and delivery context
+- Category chips and sorting (`price`, `rating`, `discount`)
+- Filters sidebar (price, brand, rating, availability)
+- Deals section with live countdown timers
+- Wishlist / save-for-later workflow
+- Product detail page with gallery, variants, features, and \"Customers also bought\" carousel
 
 ## Validation run
 - Backend tests: `cd backend && .venv/bin/pytest -q`
