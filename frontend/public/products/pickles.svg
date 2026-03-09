@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="280" viewBox="0 0 280 280">
+  <rect width="280" height="280" rx="16" fill="#fff4d8"/>
+  <rect x="54" y="66" width="48" height="150" rx="8" fill="#9a4e21"/>
+  <rect x="116" y="66" width="48" height="150" rx="8" fill="#b0602a"/>
+  <rect x="178" y="66" width="48" height="150" rx="8" fill="#88421a"/>
+  <text x="140" y="246" text-anchor="middle" font-size="14" fill="#6f3b16" font-family="Arial">PICKLES</text>
+</svg>

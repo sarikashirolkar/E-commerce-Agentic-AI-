@@ -31,8 +31,16 @@ class Product(BaseModel):
     supplier_id: str
     supplier_sku: str
     title: str
+    brand: str = "Generic"
     category: str
     inr_price: float = Field(..., gt=0)
+    mrp_inr: float | None = Field(default=None, gt=0)
+    discount_percent: int = Field(default=0, ge=0, le=95)
+    rating: float = Field(default=4.0, ge=0, le=5)
+    rating_count: int = Field(default=0, ge=0)
+    delivery_text: str = "Delivery in 5-7 days"
+    image_url: str = "/products/default.svg"
+    is_prime: bool = False
     weight_kg: float = Field(..., gt=0)
     dimensions_cm: DimensionsCm
     in_stock: bool = True

@@ -11,5 +11,9 @@ backend/.venv/
 .pytest_cache/
 .mypy_cache/
 
+# Local env and sqlite artifacts
+backend/.env
+backend/*.db
+
 # OS
 .DS_Store

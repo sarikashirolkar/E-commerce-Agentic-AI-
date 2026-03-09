@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -17,8 +18,16 @@ type Product = {
   supplier_id: string;
   supplier_sku: string;
   title: string;
+  brand: string;
   category: string;
   inr_price: number;
+  mrp_inr: number | null;
+  discount_percent: number;
+  rating: number;
+  rating_count: number;
+  delivery_text: string;
+  image_url: string;
+  is_prime: boolean;
   weight_kg: number;
   in_stock: boolean;
 };
@@ -50,6 +59,10 @@ type Order = {
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+
+function formatINR(value: number): string {
+  return `₹${value.toLocaleString("en-IN")}`;
+}
 
 function loadRazorpayScript(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -268,7 +281,7 @@ export default function Home() {
           },
         },
         theme: {
-          color: "#ad3f2f",
+          color: "#f7a100",
         },
       };
 
@@ -289,11 +302,8 @@ export default function Home() {
     <main className="page-shell">
       <section className="hero-card">
         <p className="eyebrow">Phase-1 MVP</p>
-        <h1>One checkout for Indian products worldwide</h1>
-        <p>
-          Aggregate products from Indian suppliers, quote international shipping by billable weight, and place a
-          single consolidated order.
-        </p>
+        <h1>Amazon-style product previews for NRI shopping</h1>
+        <p>Browse Indian marketplace listings with image previews, ratings, discounts, and delivery info.</p>
         <Link className="admin-link" href="/admin">
           Open Ops Dashboard
         </Link>
@@ -302,7 +312,7 @@ export default function Home() {
       <section className="panel controls">
         <label>
           Search products
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ghee, snacks, ayurvedic..." />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ghee, snacks, kurta..." />
         </label>
         <button onClick={() => void fetchProducts(query)} disabled={loading}>
           {loading ? "Loading..." : "Search"}
@@ -328,17 +338,26 @@ export default function Home() {
       <section className="grid-wrap">
         <div className="panel">
           <h2>Catalog</h2>
-          <ul className="product-list">
+          <ul className="product-grid">
             {products.map((product) => (
-              <li key={product.id}>
-                <div>
-                  <h3>{product.title}</h3>
-                  <p>
-                    ₹{product.inr_price} · {product.category} · {product.supplier_id}
-                  </p>
+              <li key={product.id} className="product-card">
+                <div className="preview-wrap">
+                  <Image src={product.image_url} alt={product.title} width={200} height={200} className="product-image" />
                 </div>
-                <button onClick={() => addToCart(product)} disabled={!product.in_stock}>
-                  {product.in_stock ? "Add" : "Out"}
+                <p className="brand">{product.brand}</p>
+                <h3>{product.title}</h3>
+                <p className="rating">
+                  {product.rating.toFixed(1)} ★ ({product.rating_count.toLocaleString("en-IN")})
+                </p>
+                <p className="price-row">
+                  <strong>{formatINR(product.inr_price)}</strong>
+                  {product.mrp_inr ? <span className="mrp">M.R.P: {formatINR(product.mrp_inr)}</span> : null}
+                  <span className="discount">-{product.discount_percent}%</span>
+                </p>
+                {product.is_prime ? <p className="prime">Prime eligible</p> : null}
+                <p className="delivery">{product.delivery_text}</p>
+                <button className="add-cart" onClick={() => addToCart(product)} disabled={!product.in_stock}>
+                  {product.in_stock ? "Add to Cart" : "Out of Stock"}
                 </button>
               </li>
             ))}
@@ -352,7 +371,7 @@ export default function Home() {
               <li key={line.product.id}>
                 <div>
                   <strong>{line.product.title}</strong>
-                  <p>₹{line.product.inr_price} each</p>
+                  <p>{formatINR(line.product.inr_price)} each</p>
                 </div>
                 <input
                   type="number"
@@ -376,12 +395,12 @@ export default function Home() {
           {quote ? (
             <div className="quote-box">
               <h3>Quote Summary</h3>
-              <p>Items subtotal: ₹{quote.items_subtotal_inr}</p>
-              <p>Product margin: ₹{quote.product_margin_inr}</p>
-              <p>Service fee: ₹{quote.service_fee_inr}</p>
+              <p>Items subtotal: {formatINR(quote.items_subtotal_inr)}</p>
+              <p>Product margin: {formatINR(quote.product_margin_inr)}</p>
+              <p>Service fee: {formatINR(quote.service_fee_inr)}</p>
               <p>Billable weight: {quote.shipping.billable_weight_kg} kg</p>
-              <p>Shipping total: ₹{quote.shipping.total_shipping_charge_inr}</p>
-              <p className="grand">Grand total: ₹{quote.grand_total_inr}</p>
+              <p>Shipping total: {formatINR(quote.shipping.total_shipping_charge_inr)}</p>
+              <p className="grand">Grand total: {formatINR(quote.grand_total_inr)}</p>
             </div>
           ) : null}
 

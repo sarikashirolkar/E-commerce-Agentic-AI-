@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="280" viewBox="0 0 280 280">
+  <rect width="280" height="280" rx="16" fill="#ffe3da"/>
+  <rect x="60" y="56" width="42" height="166" rx="8" fill="#c8442e"/>
+  <rect x="110" y="56" width="42" height="166" rx="8" fill="#d45f24"/>
+  <rect x="160" y="56" width="42" height="166" rx="8" fill="#8e2f1f"/>
+  <text x="140" y="246" text-anchor="middle" font-size="14" fill="#7a2b1a" font-family="Arial">MASALA</text>
+</svg>
