@@ -314,7 +314,7 @@ export default function Home() {
         key: rpOrderData.key_id,
         amount: rpOrderData.amount_paise,
         currency: rpOrderData.currency,
-        name: "Aurora Bazaar",
+        name: "Desi Deli",
         description: `Order ${pendingOrder.id}`,
         order_id: rpOrderData.razorpay_order_id,
         prefill: { email },
@@ -360,7 +360,7 @@ export default function Home() {
     <main className="aurora-page">
       <header className="top-nav glass-card">
         <div className="brand-zone">
-          <p className="brand-mark">Aurora Bazaar</p>
+          <p className="brand-mark">Desi Deli</p>
           <p className="delivery-loc">Deliver to {country}</p>
         </div>
         <div className="search-zone">
@@ -403,16 +403,16 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <p>Prime-style Fast Shipping</p>
+        <p>Fast UK Delivery</p>
         <p>Today&apos;s Offers</p>
         <p>Customer Care</p>
       </nav>
 
       <section className="hero-aurora glass-card">
         <div>
-          <p className="eyebrow">Northern Lights Collection</p>
-          <h1>Global Indian Shopping With Aurora Motion</h1>
-          <p>Single-cart checkout across marketplaces with curated Indian product previews and international delivery.</p>
+          <p className="eyebrow">Made In India, Loved Worldwide</p>
+          <h1>Traditional Indian Treats In A Modern Marketplace</h1>
+          <p>Shop authentic snacks, festive boxes, and regional favorites with one cart and international checkout.</p>
         </div>
         <div className="hero-cta-row">
           <button onClick={quoteCart} disabled={loading}>
@@ -425,8 +425,8 @@ export default function Home() {
       </section>
 
       <section className="promo-parallax glass-card">
-        <h3>Weekend Northern Lights Promo</h3>
-        <p>Extra discount on festival packs and prime-eligible exports</p>
+        <h3>Weekend Desi Fest Promo</h3>
+        <p>Extra discounts on bestsellers, festive packs, and export bundles</p>
       </section>
 
       <section className="deals-grid">
