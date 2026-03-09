@@ -118,3 +118,11 @@ class RazorpayVerifyRequest(BaseModel):
     razorpay_order_id: str
     razorpay_payment_id: str
     razorpay_signature: str
+
+
+class OrderStatusUpdateRequest(BaseModel):
+    status: OrderStatus
+
+
+class ProcurementTaskUpdateRequest(BaseModel):
+    status: Literal["queued", "placed", "failed"]

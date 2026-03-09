@@ -9,13 +9,16 @@ from app.db import init_db
 from app.models import (
     CheckoutRequest,
     Order,
+    OrderStatusUpdateRequest,
     OrderStatus,
+    ProcurementTaskUpdateRequest,
     RazorpayCreateOrderRequest,
     RazorpayCreateOrderResponse,
     RazorpayVerifyRequest,
     ShippingQuoteRequest,
 )
 from app.services.catalog import list_suppliers, search_products
+from app.services.operations import update_order_status, update_procurement_task_status
 from app.services.payments import create_razorpay_order, verify_razorpay_signature
 from app.services.pricing import quote_cart
 from app.services.shipping import quote_shipping
@@ -153,6 +156,34 @@ def verify_payment(payload: RazorpayVerifyRequest) -> Order:
 @app.get("/orders", response_model=list[Order])
 def fetch_orders() -> list[Order]:
     return list_orders()
+
+
+@app.patch("/orders/{order_id}/status", response_model=Order)
+def patch_order_status(order_id: str, payload: OrderStatusUpdateRequest) -> Order:
+    try:
+        order = get_order(order_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    try:
+        update_order_status(order, payload.status)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return save_order(order)
+
+
+@app.patch("/orders/{order_id}/procurement/{supplier_id}", response_model=Order)
+def patch_procurement_task(order_id: str, supplier_id: str, payload: ProcurementTaskUpdateRequest) -> Order:
+    try:
+        order = get_order(order_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    try:
+        update_procurement_task_status(order, supplier_id, payload.status)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return save_order(order)
 
 
 @app.get("/orders/{order_id}", response_model=Order)

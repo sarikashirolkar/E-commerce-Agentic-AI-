@@ -58,7 +58,14 @@ Frontend env vars:
 - `POST /payments/razorpay/order`
 - `POST /payments/razorpay/verify`
 - `GET /orders`
+- `PATCH /orders/{order_id}/status`
+- `PATCH /orders/{order_id}/procurement/{supplier_id}`
 - `GET /orders/{order_id}`
+
+## Admin ops UI
+- `GET /admin` in the Next.js app provides an operations dashboard for:
+- order status updates (`payment_pending` → `purchasing` → `consolidating` → `shipped`)
+- procurement task updates per supplier (`queued` / `placed` / `failed`)
 
 ## Validation run
 - Backend tests: `cd backend && .venv/bin/pytest -q`

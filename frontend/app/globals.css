@@ -183,6 +183,79 @@ button:disabled {
   color: var(--accent);
 }
 
+.admin-link {
+  display: inline-flex;
+  margin-top: 0.8rem;
+  color: #fff;
+  background: linear-gradient(130deg, var(--accent-2), #2a9887);
+  border-radius: 10px;
+  padding: 0.45rem 0.7rem;
+  font-weight: 700;
+}
+
+.admin-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-order {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-order-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.admin-order-header h2 {
+  font-size: 1.1rem;
+}
+
+.admin-order-header p {
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.admin-order-header label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.admin-procurement h3 {
+  margin-bottom: 0.45rem;
+}
+
+.admin-task {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.admin-task-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.admin-task-actions button:first-child {
+  background: linear-gradient(130deg, #6f6250, #8f816e);
+}
+
+.admin-task-actions button:last-child {
+  background: linear-gradient(130deg, #8f2727, #bf4a4a);
+}
+
 @media (max-width: 920px) {
   .controls {
     grid-template-columns: 1fr 1fr;
@@ -205,6 +278,14 @@ button:disabled {
   }
 
   .actions {
+    flex-direction: column;
+  }
+
+  .admin-order-header {
+    flex-direction: column;
+  }
+
+  .admin-task-actions {
     flex-direction: column;
   }
 }

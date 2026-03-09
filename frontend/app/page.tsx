@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 declare global {
@@ -293,6 +294,9 @@ export default function Home() {
           Aggregate products from Indian suppliers, quote international shipping by billable weight, and place a
           single consolidated order.
         </p>
+        <Link className="admin-link" href="/admin">
+          Open Ops Dashboard
+        </Link>
       </section>
 
       <section className="panel controls">
