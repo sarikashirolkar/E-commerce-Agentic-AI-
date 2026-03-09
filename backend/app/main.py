@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.models import CheckoutRequest, Order, ShippingQuoteRequest
 from app.services.catalog import list_suppliers, search_products
@@ -10,6 +11,13 @@ from app.services.supplier_ordering import build_procurement_tasks
 from app.store import get_order, save_order
 
 app = FastAPI(title="NRI Global Shopping Platform API", version="0.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")
