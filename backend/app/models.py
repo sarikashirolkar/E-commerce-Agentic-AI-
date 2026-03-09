@@ -92,5 +92,29 @@ class Order(BaseModel):
     destination_country: str
     items: list[CartItem]
     quote: CartQuoteResponse
-    procurement_tasks: list[ProcurementTask]
-    status: OrderStatus = OrderStatus.paid
+    procurement_tasks: list[ProcurementTask] = Field(default_factory=list)
+    status: OrderStatus = OrderStatus.payment_pending
+    payment_currency: Literal["INR"] = "INR"
+    payment_amount_inr: float = Field(..., gt=0)
+    payment_provider: Literal["razorpay"] | None = None
+    razorpay_order_id: str | None = None
+    razorpay_payment_id: str | None = None
+    paid_at: datetime | None = None
+
+
+class RazorpayCreateOrderRequest(BaseModel):
+    order_id: str
+
+
+class RazorpayCreateOrderResponse(BaseModel):
+    key_id: str
+    razorpay_order_id: str
+    amount_paise: int
+    currency: Literal["INR"] = "INR"
+
+
+class RazorpayVerifyRequest(BaseModel):
+    order_id: str
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str

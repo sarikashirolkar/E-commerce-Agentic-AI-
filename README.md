@@ -1,37 +1,52 @@
 # Global Indian Shopping Platform for NRIs (Phase-1 MVP)
 
-This repository contains a Phase-1 working MVP for a global Indian shopping platform that lets overseas customers buy from multiple Indian suppliers in one consolidated checkout.
-
-## What is implemented
-- Product catalog abstraction across multiple suppliers
-- Search/filter endpoint for aggregated products
-- Shipping quote calculator using billable weight (physical vs volumetric)
-- Cart quote endpoint with product margin, shipping margin, and service fee
-- Checkout flow that creates an order and supplier procurement tasks
-- In-memory order store for prototype workflows
-- Next.js storefront UI for catalog browsing, cart building, quote preview, and checkout
+This repository now includes a working Phase-1 backend + frontend MVP:
+- Multi-supplier catalog and cart quote logic
+- Consolidated checkout flow
+- Razorpay payment order creation + signature verification
+- PostgreSQL-ready order persistence (via SQLAlchemy)
 
 ## Tech stack
-- Python + FastAPI
-- Next.js + TypeScript
-- Pydantic models
-- Pytest tests
+- Backend: FastAPI, SQLAlchemy, PostgreSQL driver (`psycopg`)
+- Frontend: Next.js (App Router), TypeScript
+- Tests: Pytest
 
-## Quick start (backend)
+## What is implemented
+- Aggregated supplier/product model
+- Product search endpoint
+- Shipping quote engine (physical vs volumetric weight)
+- Cart quote endpoint with margin + service fee
+- Payment-pending order creation (`/checkout`)
+- Razorpay order creation (`/payments/razorpay/order`)
+- Razorpay signature verification (`/payments/razorpay/verify`)
+- Order listing/fetch APIs (`/orders`, `/orders/{order_id}`)
+
+## Backend setup
 ```bash
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
 
-## Quick start (frontend)
+Backend env vars:
+- `DATABASE_URL` example: `postgresql+psycopg://postgres:postgres@localhost:5432/nri_shop`
+- `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`
+
+If `DATABASE_URL` is not provided, backend defaults to `sqlite:///./nri_shop.db` for local development.
+
+## Frontend setup
 ```bash
 cd frontend
 npm install
-NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000 npm run dev
+cp .env.example .env.local
+npm run dev
 ```
+
+Frontend env vars:
+- `NEXT_PUBLIC_API_BASE_URL` (default expected: `http://127.0.0.1:8000`)
 
 ## API endpoints
 - `GET /health`
@@ -40,24 +55,14 @@ NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000 npm run dev
 - `POST /shipping/quote`
 - `POST /cart/quote`
 - `POST /checkout`
+- `POST /payments/razorpay/order`
+- `POST /payments/razorpay/verify`
+- `GET /orders`
 - `GET /orders/{order_id}`
 
-## Example request
-```bash
-curl -s http://127.0.0.1:8000/cart/quote \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "destination_country": "US",
-    "items": [
-      {"product_id": "prd_amul_ghee_1l", "quantity": 2},
-      {"product_id": "prd_haldiram_bhujia", "quantity": 1}
-    ]
-  }'
-```
+## Validation run
+- Backend tests: `cd backend && .venv/bin/pytest -q`
+- Frontend lint: `cd frontend && npm run lint`
+- Frontend build: `cd frontend && npm run build`
 
-## Notes
-- Supplier integrations are currently mocked via adapters and static catalog entries.
-- Warehouse/inventory and real payment/courier integrations are planned for the next iteration.
-- This is intentionally structured so each integration can be swapped with real APIs in Phase 2.
-
-See [docs/roadmap.md](docs/roadmap.md) for delivery plan and expansion path.
+See [docs/roadmap.md](docs/roadmap.md) for expansion path.

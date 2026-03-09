@@ -2,6 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => {
+      open: () => void;
+      on: (event: string, callback: (response: { error: { description: string } }) => void) => void;
+    };
+  }
+}
+
 type Product = {
   id: string;
   supplier_id: string;
@@ -35,9 +44,27 @@ type Order = {
   id: string;
   status: string;
   quote: Quote;
+  razorpay_order_id?: string;
+  razorpay_payment_id?: string;
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -50,13 +77,13 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>("");
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (searchTerm: string) => {
     setLoading(true);
     setMessage("");
     try {
       const params = new URLSearchParams();
-      if (query.trim()) {
-        params.set("query", query.trim());
+      if (searchTerm.trim()) {
+        params.set("query", searchTerm.trim());
       }
       const response = await fetch(`${API_BASE}/products?${params.toString()}`);
       if (!response.ok) {
@@ -70,10 +97,10 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [query]);
+  }, []);
 
   useEffect(() => {
-    void fetchProducts();
+    void fetchProducts("");
   }, [fetchProducts]);
 
   function addToCart(product: Product) {
@@ -143,7 +170,7 @@ export default function Home() {
     }
   }
 
-  async function checkout() {
+  async function payWithRazorpay() {
     if (cartItems.length === 0) {
       setMessage("Cart is empty.");
       return;
@@ -153,7 +180,7 @@ export default function Home() {
     setMessage("");
 
     try {
-      const response = await fetch(`${API_BASE}/checkout`, {
+      const checkoutResponse = await fetch(`${API_BASE}/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -162,13 +189,93 @@ export default function Home() {
           items: cartItems,
         }),
       });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.detail || "Checkout failed");
+      const checkoutData = (await checkoutResponse.json()) as Order | { detail: string };
+      if (!checkoutResponse.ok) {
+        throw new Error("detail" in checkoutData ? checkoutData.detail : "Checkout failed");
       }
-      setOrder(data as Order);
-      setQuote((data as Order).quote);
-      setMessage("Order placed successfully.");
+
+      const pendingOrder = checkoutData as Order;
+      setQuote(pendingOrder.quote);
+
+      const rpOrderResponse = await fetch(`${API_BASE}/payments/razorpay/order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: pendingOrder.id }),
+      });
+      const rpOrderData =
+        (await rpOrderResponse.json()) as
+          | {
+              key_id: string;
+              razorpay_order_id: string;
+              amount_paise: number;
+              currency: string;
+            }
+          | { detail: string };
+
+      if (!rpOrderResponse.ok) {
+        throw new Error("detail" in rpOrderData ? rpOrderData.detail : "Unable to initialize Razorpay");
+      }
+      if ("detail" in rpOrderData) {
+        throw new Error(rpOrderData.detail);
+      }
+
+      const razorpayLoaded = await loadRazorpayScript();
+      if (!razorpayLoaded || !window.Razorpay) {
+        throw new Error("Unable to load Razorpay checkout script");
+      }
+
+      const options = {
+        key: rpOrderData.key_id,
+        amount: rpOrderData.amount_paise,
+        currency: rpOrderData.currency,
+        name: "GharSe Global",
+        description: `Order ${pendingOrder.id}`,
+        order_id: rpOrderData.razorpay_order_id,
+        prefill: {
+          email,
+        },
+        handler: async (paymentResponse: {
+          razorpay_order_id: string;
+          razorpay_payment_id: string;
+          razorpay_signature: string;
+        }) => {
+          const verifyResponse = await fetch(`${API_BASE}/payments/razorpay/verify`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              order_id: pendingOrder.id,
+              razorpay_order_id: paymentResponse.razorpay_order_id,
+              razorpay_payment_id: paymentResponse.razorpay_payment_id,
+              razorpay_signature: paymentResponse.razorpay_signature,
+            }),
+          });
+
+          const verifyData = (await verifyResponse.json()) as Order | { detail: string };
+          if (!verifyResponse.ok) {
+            setMessage("detail" in verifyData ? verifyData.detail : "Payment verification failed");
+            return;
+          }
+
+          const verifiedOrder = verifyData as Order;
+          setOrder(verifiedOrder);
+          setQuote(verifiedOrder.quote);
+          setMessage("Payment verified. Procurement initiated.");
+        },
+        modal: {
+          ondismiss: () => {
+            setMessage("Payment window closed before completion.");
+          },
+        },
+        theme: {
+          color: "#ad3f2f",
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.on("payment.failed", (response: { error: { description: string } }) => {
+        setMessage(`Payment failed: ${response.error.description}`);
+      });
+      razorpay.open();
     } catch (error) {
       const text = error instanceof Error ? error.message : "Unknown error";
       setMessage(text);
@@ -193,7 +300,7 @@ export default function Home() {
           Search products
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ghee, snacks, ayurvedic..." />
         </label>
-        <button onClick={fetchProducts} disabled={loading}>
+        <button onClick={() => void fetchProducts(query)} disabled={loading}>
           {loading ? "Loading..." : "Search"}
         </button>
 
@@ -257,8 +364,8 @@ export default function Home() {
             <button onClick={quoteCart} disabled={loading}>
               Quote Cart
             </button>
-            <button onClick={checkout} disabled={loading}>
-              Checkout
+            <button onClick={payWithRazorpay} disabled={loading}>
+              Pay with Razorpay
             </button>
           </div>
 
@@ -279,6 +386,7 @@ export default function Home() {
               <h3>Order Confirmed</h3>
               <p>Order ID: {order.id}</p>
               <p>Status: {order.status}</p>
+              {order.razorpay_payment_id ? <p>Payment ID: {order.razorpay_payment_id}</p> : null}
             </div>
           ) : null}
         </div>
